@@ -24,6 +24,7 @@ Before you can start using the Langchain Medical Bot, make sure you have the fol
     - langchain
     - chainlit
     - sentence-transformers
+    - ctransformers
     - faiss
     - PyPDF2 (for PDF document loading)
 
@@ -32,8 +33,8 @@ Before you can start using the Langchain Medical Bot, make sure you have the fol
 1. Clone this repository to your local machine.
 
     ```bash
-    git clone https://github.com/your-username/langchain-medical-bot.git
-    cd langchain-medical-bot
+    git clone https://github.com/adnanrizve/docassistant.git
+
     ```
 
 2. Create a Python virtual environment (optional but recommended):
