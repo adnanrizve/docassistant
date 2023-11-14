@@ -1,0 +1,14 @@
+pypdf
+langchain
+torch
+accelerate
+bitsandbytes
+transformers
+sentence_transformers
+faiss_cpu
+chainlit
+huggingface_hub
+chromadb
+tiktoken
+PyPDF2
+ctransformers
