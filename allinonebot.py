@@ -82,7 +82,7 @@ def set_custom_prompt():
 
 messages = [     
             SystemMessagePromptTemplate.from_template(system_template),     
-            HumanMessagePromptTemplate.from_template(custom_prompt_template), 
+            HumanMessagePromptTemplate.from_template(custom_prompt_openai), 
 ] 
 prompt = ChatPromptTemplate.from_messages(messages) 
 
@@ -112,7 +112,9 @@ def load_llm():
         model = "models/llama-2-7b-chat.Q8_0.gguf",
         model_type="llama",
         max_new_tokens = 512,
-        temperature = 0.2
+        temperature = 0.4,
+        repetition_penalty = 1.2,
+        top_k = 50
     )
     return llm
 
