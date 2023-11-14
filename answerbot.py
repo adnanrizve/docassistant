@@ -36,7 +36,7 @@ def set_custom_prompt():
     """
     Prompt template for QA retrieval for each vectorstore
     """
-    prompt = PromptTemplate(template=custom_prompt_template,
+    prompt = PromptTemplate(template=custom_prompt_openai,
                             input_variables=['context', 'question'])
     return prompt
 
@@ -57,7 +57,9 @@ def load_llm():
         model = "models/llama-2-7b-chat.Q8_0.gguf",
         model_type="llama",
         max_new_tokens = 512,
-        temperature = 0.5
+        temperature = 0.4,
+        repetition_penalty = 1.2,
+        top_k = 50
     )
     return llm
 
