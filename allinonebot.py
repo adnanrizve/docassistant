@@ -117,7 +117,8 @@ def load_llm():
     return llm
 
 def hugging_embedding():
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
+    # you can use a different embedding by replacing with model_name = sentence-transformers/all-MiniLM-L6-v2. system will download it during first execution
+    embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5",
                                        model_kwargs={'device': 'cpu'})
     return embeddings
 
