@@ -2,23 +2,8 @@ from typing import List
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
-from langchain.chains import (
-    ConversationalRetrievalChain,
-)
 
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
-
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
 from langchain.docstore.document import Document
-from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 
 import chainlit as cl
 from langchain.chains import RetrievalQA
@@ -32,18 +17,6 @@ import PyPDF2
 from io import BytesIO
 from huggingface_hub import hf_hub_download
 
-
-
-system_template = """Use the following pieces of context to answer the users question.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
-ALWAYS return a "SOURCES" part in your answer.
-The "SOURCES" part should be a reference to the source of the document from which you got your answer.
-
-And if the user greets with greetings like Hi, hello, How are you, etc reply accordingly as well.
-
-Begin!
-----------------
-"""
 
 custom_prompt_template = """Use the following pieces of information to answer the user's question.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -78,16 +51,6 @@ def set_custom_prompt():
     prompt = PromptTemplate(template=custom_prompt_template,
                             input_variables=['context', 'question'])
     return prompt
-
-
-messages = [     
-            SystemMessagePromptTemplate.from_template(system_template),     
-            HumanMessagePromptTemplate.from_template(custom_prompt_openai), 
-] 
-prompt = ChatPromptTemplate.from_messages(messages) 
-
-chain_type_kwargs = {"prompt": prompt}
-
 
 
 
@@ -143,7 +106,7 @@ async def on_chat_start():
     # Wait for the user to upload a file
     while files == None:
         files = await cl.AskFileMessage(
-            content="Please upload a text file to begin!",
+            content="Please upload a pdf file to begin!",
             accept=["application/pdf"],
             max_size_mb=20,
             timeout=280,
