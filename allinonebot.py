@@ -119,6 +119,7 @@ def load_llm():
     return llm
 
 def hugging_embedding():
+    
     # you can use a different embedding by replacing with model_name = sentence-transformers/all-MiniLM-L6-v2. system will download it during first execution
     embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5",
                                        model_kwargs={'device': 'cpu'})
@@ -128,7 +129,7 @@ def hugging_embedding():
 def retrieval_qa_chain(llm, prompt, db):     
     qa_chain = RetrievalQA.from_chain_type(llm=llm,
                                            chain_type='stuff',
-                                           retriever=db.as_retriever(),
+                                           retriever=db.as_retriever(search_kwargs={'k': 2}),
                                            return_source_documents=True,
                                            chain_type_kwargs={'prompt': prompt}                                        
                                            )     
