@@ -1,17 +1,13 @@
 from typing import List
-
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-
+from langchain_community.vectorstores import Chroma
 from langchain.docstore.document import Document
-
 import chainlit as cl
 from langchain.chains import RetrievalQA
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain import PromptTemplate
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.llms import CTransformers
-from langchain.text_splitter import RecursiveCharacterTextSplitter 
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain.prompts import PromptTemplate
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.llms import CTransformers
 import io
 import PyPDF2
 from io import BytesIO
@@ -114,12 +110,14 @@ async def on_chat_start():
 
     file = files[0]
     msg = cl.Message(
-        content=f"Processing `{file.name}`...", disable_human_feedback=True
+        content=f"Processing `{file.name}`..."
     )
     await msg.send()
-
+    with open(file.path, "rb") as f:
+        bytetext = f.read()
+        
     # Read the PDF file
-    pdf_stream = BytesIO(file.content)
+    pdf_stream = BytesIO(bytetext)
     pdf = PyPDF2.PdfReader(pdf_stream)
     pdf_text = ""
     for page in pdf.pages:
