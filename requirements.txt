@@ -1,5 +1,6 @@
 pypdf
 langchain
+langchain-community
 torch
 accelerate
 bitsandbytes
@@ -12,6 +13,7 @@ chromadb
 tiktoken
 PyPDF2
 ctransformers
+
 
 
 
