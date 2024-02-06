@@ -15,4 +15,4 @@ ctransformers
 
 
 
-https://aws.amazon.com/blogs/aws/knowledge-bases-now-delivers-fully-managed-rag-experience-in-amazon-bedrock/
+
