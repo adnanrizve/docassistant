@@ -131,3 +131,38 @@ Driver=/opt/amazon/redshiftodbc/lib/64/libamazonredshiftodbc.so
 [PostgreSQL]
 Description=ODBC for PostgreSQL
 Driver=/usr/lib/psqlodbcw.so
+
+
+
+
+
+FROM amazonlinux:2
+
+# Install dependencies
+RUN yum -y update && \
+    yum -y install \
+    curl \
+    tar \
+    gzip \
+    icu \
+    krb5-libs \
+    libcurl \
+    openssl \
+    zlib \
+    && yum clean all
+
+# Set .NET version and install path
+ENV DOTNET_VERSION=8.0.0
+ENV DOTNET_DOWNLOAD_URL=https://download.visualstudio.microsoft.com/download/pr/0a8279f6-e503-4c1a-bba8-3dfd385c8c9c/3cb5c21e87719318b254ca4b7b4b0d37/dotnet-runtime-8.0.0-linux-x64.tar.gz
+ENV DOTNET_ROOT=/usr/share/dotnet
+ENV PATH=$PATH:$DOTNET_ROOT
+
+# Download and install .NET 8 runtime
+RUN mkdir -p "$DOTNET_ROOT" && \
+    curl -SL "$DOTNET_DOWNLOAD_URL" | tar -xz -C "$DOTNET_ROOT"
+
+# Verify installation
+RUN dotnet --info
+
+# Optional: set default entrypoint
+# ENTRYPOINT ["dotnet"]
