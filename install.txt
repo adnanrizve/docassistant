@@ -1,0 +1,133 @@
+FROM alpine:3.18
+
+# Install required tools
+RUN apk add --no-cache bash curl tar libc6-compat \
+    && apk add --no-cache --virtual .build-deps libstdc++ binutils
+
+# Install glibc
+ENV GLIBC_VERSION=2.35-r1
+RUN curl -Lo /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+    && curl -Lo glibc.apk https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk \
+    && apk add glibc.apk \
+    && rm -f glibc.apk
+
+# Set environment variables for ODBC
+ENV ODBCINI=/etc/odbc.ini
+ENV ODBCSYSINI=/etc/
+
+# Download and extract Amazon Redshift ODBC driver (manual step required to obtain the RPM)
+# Assume driver is included in build context
+COPY AmazonRedshiftODBC-64-bit.x86_64.rpm /tmp/
+RUN apk add --no-cache rpm2cpio cpio \
+    && mkdir -p /opt/amazon/redshiftodbc \
+    && cd /opt/amazon/redshiftodbc \
+    && rpm2cpio /tmp/AmazonRedshiftODBC-64-bit.x86_64.rpm | cpio -idmv \
+    && rm /tmp/AmazonRedshiftODBC-64-bit.x86_64.rpm
+
+# Add ODBC configuration files
+COPY odbc.ini /etc/odbc.ini
+COPY odbcinst.ini /etc/odbcinst.ini
+
+CMD ["bash"]
+
+
+
+
+
+[Redshift]
+Description=Amazon Redshift ODBC
+Driver=Amazon Redshift ODBC Driver
+Server=your-redshift-cluster.amazonaws.com
+Database=your_db
+UID=your_user
+PWD=your_password
+Port=5439
+
+
+
+[Amazon Redshift ODBC Driver]
+Description=Amazon Redshift ODBC Driver
+Driver=/opt/amazon/redshiftodbc/lib/amazonredshiftodbc.so
+
+
+
+
+
+FROM alpine:3.18
+
+# Install dependencies and glibc
+RUN apk add --no-cache bash curl ca-certificates libstdc++ \
+ && curl -Lo /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+ && curl -Lo glibc.apk https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r1/glibc-2.35-r1.apk \
+ && apk add --no-cache glibc.apk
+
+# Add Amazon Redshift ODBC driver manually
+# You need to download the RPM manually and extract it
+# (For example: AmazonRedshiftODBC-64-bit-1.X.X.X.X.x86_64.rpm)
+
+COPY AmazonRedshiftODBC-64-bit*.rpm /tmp/
+
+RUN apk add --no-cache rpm2cpio cpio \
+ && cd /opt \
+ && rpm2cpio /tmp/AmazonRedshiftODBC-64-bit*.rpm | cpio -idmv
+
+# Set up ODBC configuration
+COPY odbc.ini /etc/odbc.ini
+COPY odbcinst.ini /etc/odbcinst.ini
+ENV ODBCSYSINI=/etc
+
+CMD ["bash"]
+
+
+
+
+FROM debian:bullseye-slim
+
+RUN apt-get update && apt-get install -y \
+    unixodbc \
+    libodbc1 \
+    odbcinst \
+    curl \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install Redshift ODBC RPM
+COPY AmazonRedshiftODBC-64-bit*.rpm /tmp/
+
+RUN apt-get update && apt-get install -y rpm2cpio cpio \
+ && mkdir /opt/redshift \
+ && cd /opt/redshift \
+ && rpm2cpio /tmp/AmazonRedshiftODBC-64-bit*.rpm | cpio -idmv
+
+# Configure ODBC
+COPY odbc.ini /etc/odbc.ini
+COPY odbcinst.ini /etc/odbcinst.ini
+ENV ODBCSYSINI=/etc
+
+CMD ["bash"]
+.
+
+
+FROM alpine:3.18
+
+RUN apk add --no-cache unixodbc-dev postgresql-dev
+
+# Configure ODBC (psqlODBC uses libpq)
+COPY odbc.ini /etc/odbc.ini
+COPY odbcinst.ini /etc/odbcinst.ini
+ENV ODBCSYSINI=/etc
+
+CMD ["bash"]
+
+
+
+
+
+[Amazon Redshift ODBC Driver]
+Description=Amazon Redshift ODBC Driver
+Driver=/opt/amazon/redshiftodbc/lib/64/libamazonredshiftodbc.so
+
+
+[PostgreSQL]
+Description=ODBC for PostgreSQL
+Driver=/usr/lib/psqlodbcw.so
