@@ -166,3 +166,26 @@ RUN dotnet --info
 
 # Optional: set default entrypoint
 # ENTRYPOINT ["dotnet"]
+
+
+
+
+
+
+
+import json
+import pandas as pd
+from pandas import json_normalize
+
+# Load JSON file
+with open('data.json') as f:
+    data = json.load(f)
+
+# Extract the specific node (e.g., 'employees')
+employees = data['employees']
+
+# Normalize and flatten
+df = json_normalize(employees)
+
+# Export to CSV
+df.to_csv('employees.csv', index=False)
