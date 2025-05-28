@@ -189,3 +189,171 @@ df = json_normalize(employees)
 
 # Export to CSV
 df.to_csv('employees.csv', index=False)
+
+
+
+
+
+
+# 🔐 Security Policy
+
+## 📘 Overview
+
+This repository contains code written in **TypeScript (Node.js)** and **C# (.NET)**. This policy outlines our approach to keeping it secure through secure development practices, CI/CD controls, dependency hygiene, and vulnerability reporting.
+
+---
+
+## 🎯 Scope
+
+This policy applies to:
+
+- All application and infrastructure code in this repository
+- Build scripts, CI/CD pipelines, and related artifacts
+- Contributors, maintainers, and DevOps engineers
+
+---
+
+## ✅ Secure Coding Practices
+
+### For All Code
+
+- Follow [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- Validate and sanitize all user inputs
+- Avoid hardcoding secrets, credentials, or tokens
+- Apply the **principle of least privilege** for all configuration and code
+
+### TypeScript
+
+- Use `eslint` with `eslint-plugin-security` to catch insecure patterns
+- Use strict types and avoid `any` where possible
+- Avoid unsafe usage of `eval()`, `Function()`, or dynamic imports
+- Avoid directly accessing external input in DB or command-line operations
+
+### C#
+
+- Use input validation libraries like `FluentValidation`
+- Protect against SQL injection with parameterized queries (e.g., `SqlCommand.Parameters`)
+- Use `HttpClientFactory` for safe HTTP calls (avoid raw `HttpClient` reuse)
+- Use strong typing and nullability features
+- Avoid reflection and unsafe code blocks unless justified
+
+---
+
+## 🔐 Secrets Management
+
+- Do not store secrets, credentials, or tokens in source files
+- Use `.gitignore` to exclude:
+  - `.env`, `appsettings.Development.json`, `secrets.json`
+- Secrets should be managed via:
+  - Environment variables
+  - GitHub/GitLab CI/CD secrets
+  - Vault services (e.g., Azure Key Vault, AWS Secrets Manager)
+
+Tools used:
+- GitLab Secret Detection
+- GitGuardian (optional)
+- Pre-commit hooks with `detect-secrets`
+
+---
+
+## 📦 Dependency Management
+
+### TypeScript (Node.js)
+
+- All packages must be declared in `package.json`
+- Run `npm audit` or integrate [GitLab Dependency Scanning](https://docs.gitlab.com/ee/user/application_security/dependency_scanning/)
+- Detect unused/missing packages using `depcheck`
+- Detect unmaintained packages via custom scripts or `npm-check-updates`
+
+### C# (.NET)
+
+- All dependencies must be declared in `.csproj` or `packages.config`
+- Use `dotnet list package --vulnerable` or [OWASP Dependency-Check](https://jeremylong.github.io/DependencyCheck/)
+- Pin versions and avoid transitive bloat
+- Use only packages with active support and security posture
+
+---
+
+## 🧪 Static Application Security Testing (SAST)
+
+- Enable SAST scans in CI for both languages:
+  - TypeScript: ESLint + GitLab/GitHub SAST
+  - C#: Roslyn analyzers, SonarQube, or GitLab SAST
+- Critical/High severity issues must block merge unless a documented exception exists
+
+---
+
+## 🧪 Additional Scans
+
+- **Secret detection** is required in CI for every merge request
+- **Container scanning** (if Dockerized) must run on all tagged builds
+- **DAST** scans are optional but encouraged for exposed web services
+
+---
+
+## 🛡️ CI/CD Security Controls
+
+- CI pipelines must run:
+  - SAST
+  - Dependency scanning
+  - Secret scanning
+- Pipelines must fail if:
+  - Secrets are committed
+  - Critical/High vulnerabilities are detected
+- Build containers must be pulled from trusted registries and scanned
+
+---
+
+## 🔍 Code Review & Branch Protection
+
+- Require at least **one reviewer** for all MRs/PRs
+- Reviewers must validate:
+  - Input sanitization
+  - Secure use of third-party libraries
+  - No secrets or sensitive keys in changes
+- Enforce branch protections:
+  - No force pushes to `main`, `release/*`
+  - Require status checks to pass before merge
+
+---
+
+## 🔐 Repository Access Control
+
+- Enforce 2FA for all contributors
+- Use least privilege for repo permissions (Developer vs Maintainer roles)
+- Rotate personal access tokens and CI/CD credentials regularly
+- Audit repository access quarterly
+
+---
+
+## 🚨 Reporting a Vulnerability
+
+If you discover a security vulnerability in this project, report it confidentially:
+
+- Email: `security@example.com`
+- Do **not** open public issues for vulnerabilities
+
+We will:
+
+- Acknowledge your report within 72 hours
+- Provide a fix or mitigation within 14 days (target SLA)
+
+---
+
+## 📅 Maintenance
+
+- All dependencies must be reviewed for security updates monthly
+- Security tools and CI scripts are updated quarterly
+- This policy is reviewed and updated every 6 months
+
+---
+
+## 🙏 Acknowledgements
+
+- OWASP Foundation
+- GitLab Secure / GitHub Security
+- Node.js Security WG
+- Microsoft Secure Dev Practices
+
+---
+
