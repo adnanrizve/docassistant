@@ -357,3 +357,30 @@ We will:
 
 ---
 
+
+resource "aws_iam_policy" "cross_account_secret_access" {
+  name = "CrossAccountSecretsAccess"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        Resource = "arn:aws:secretsmanager:us-west-2:<ACCOUNT_B_ID>:secret:my-secret-name*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ],
+        Resource = "arn:aws:kms:us-west-2:<ACCOUNT_B_ID>:key/<kms-key-id>"
+      }
+    ]
+  })
+}
+
