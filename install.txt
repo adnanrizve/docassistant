@@ -357,3 +357,33 @@ We will:
 
 ---
 
+
+
+OnAuthenticationFailed = context =>
+            {
+                context.NoResult(); // Prevent default logic
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+
+                var result = new
+                {
+                    message = "Certificate authentication failed",
+                    reason = context.Exception?.Message
+                };
+
+                return context.Response.WriteAsync(JsonSerializer.Serialize(result));
+            },
+
+            OnChallenge = context =>
+            {
+                context.HandleResponse(); // Suppress default challenge behavior
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var result = new
+                {
+                    message = "Client certificate is required or invalid"
+                };
+
+                return context.Response.WriteAsync(JsonSerializer.Serialize(result));
+            }
