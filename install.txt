@@ -357,33 +357,35 @@ We will:
 
 ---
 
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 
+var apiUrl = "https://localhost:5001/secure-cert-endpoint"; // Adjust as needed
+var certPath = "certs/client.pfx";
+var certPassword = "your-cert-password";
 
-OnAuthenticationFailed = context =>
-            {
-                context.NoResult(); // Prevent default logic
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                context.Response.ContentType = "application/json";
+// Load client certificate
+var clientCertificate = new X509Certificate2(certPath, certPassword);
 
-                var result = new
-                {
-                    message = "Certificate authentication failed",
-                    reason = context.Exception?.Message
-                };
+// Create HttpClientHandler and attach the certificate
+var handler = new HttpClientHandler();
+handler.ClientCertificates.Add(clientCertificate);
+handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // Only for local testing
 
-                return context.Response.WriteAsync(JsonSerializer.Serialize(result));
-            },
+using var client = new HttpClient(handler);
 
-            OnChallenge = context =>
-            {
-                context.HandleResponse(); // Suppress default challenge behavior
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                context.Response.ContentType = "application/json";
+try
+{
+    var response = await client.GetAsync(apiUrl);
+    Console.WriteLine($"Status Code: {response.StatusCode}");
 
-                var result = new
-                {
-                    message = "Client certificate is required or invalid"
-                };
+    var content = await response.Content.ReadAsStringAsync();
+    Console.WriteLine("Response:");
+    Console.WriteLine(content);
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Request failed:");
+    Console.WriteLine(ex.Message);
+}
 
-                return context.Response.WriteAsync(JsonSerializer.Serialize(result));
-            }
