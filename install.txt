@@ -356,36 +356,19 @@ We will:
 - Microsoft Secure Dev Practices
 
 ---
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "/CN=My-Client-CA"
 
-using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
+# Create server cert
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -out server.csr -subj "/CN=localhost"
+openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365
+openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt -certfile ca.pem
 
-var apiUrl = "https://localhost:5001/secure-cert-endpoint"; // Adjust as needed
-var certPath = "certs/client.pfx";
-var certPassword = "your-cert-password";
+# Create client cert
+openssl genrsa -out client.key 2048
+openssl req -new -key client.key -out client.csr -subj "/CN=MyClient"
+openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out client.crt -days 365
 
-// Load client certificate
-var clientCertificate = new X509Certificate2(certPath, certPassword);
-
-// Create HttpClientHandler and attach the certificate
-var handler = new HttpClientHandler();
-handler.ClientCertificates.Add(clientCertificate);
-handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // Only for local testing
-
-using var client = new HttpClient(handler);
-
-try
-{
-    var response = await client.GetAsync(apiUrl);
-    Console.WriteLine($"Status Code: {response.StatusCode}");
-
-    var content = await response.Content.ReadAsStringAsync();
-    Console.WriteLine("Response:");
-    Console.WriteLine(content);
-}
-catch (Exception ex)
-{
-    Console.WriteLine("Request failed:");
-    Console.WriteLine(ex.Message);
-}
-
+# Convert to PEM (curl can use PEM directly)
+cat client.crt client.key > client.pem
