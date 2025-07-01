@@ -372,3 +372,16 @@ openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out c
 
 # Convert to PEM (curl can use PEM directly)
 cat client.crt client.key > client.pem
+
+
+"Kestrel": {
+  "Endpoints": {
+    "Https": {
+      "Url": "https://localhost:5001",
+      "Certificate": {
+        "Path": "certs/server.pfx",
+        "Password": "your-password"
+      }
+    }
+  }
+}
