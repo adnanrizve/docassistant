@@ -356,32 +356,57 @@ We will:
 - Microsoft Secure Dev Practices
 
 ---
-openssl genrsa -out ca.key 2048
-openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "/CN=My-Client-CA"
+🛠 Step-by-Step OpenSSL Commands
+🔹 Step 1: Generate Root CA
 
-# Create server cert
-openssl genrsa -out server.key 2048
-openssl req -new -key server.key -out server.csr -subj "/CN=localhost"
-openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365
-openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt -certfile ca.pem
+mkdir -p certs/root
+cd certs/root
 
-# Create client cert
-openssl genrsa -out client.key 2048
-openssl req -new -key client.key -out client.csr -subj "/CN=MyClient"
-openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out client.crt -days 365
+# Generate Root CA private key
+openssl genrsa -out ca.key 4096
 
-# Convert to PEM (curl can use PEM directly)
-cat client.crt client.key > client.pem
+# Generate Root CA self-signed certificate (valid 10 years)
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 \
+  -out ca.crt -subj "/C=US/ST=CA/O=MyRootCA/CN=MyRootCA"
 
+🔸 Step 2: Generate Intermediate CA
 
-"Kestrel": {
-  "Endpoints": {
-    "Https": {
-      "Url": "https://localhost:5001",
-      "Certificate": {
-        "Path": "certs/server.pfx",
-        "Password": "your-password"
-      }
-    }
-  }
-}
+cd ../intermediate
+
+# Generate Intermediate CA private key
+openssl genrsa -out ca.key 4096
+
+# Generate CSR for Intermediate CA
+openssl req -new -key ca.key -out ca.csr -subj "/C=US/ST=CA/O=MyIntermediateCA/CN=MyIntermediateCA"
+
+# Sign intermediate CSR with Root CA
+openssl x509 -req -in ca.csr -CA ../root/ca.crt -CAkey ../root/ca.key -CAcreateserial \
+  -out ca.crt -days 1825 -sha256
+
+🔹 Step 3: Generate and Sign Client Certificate
+
+cd ../clients
+
+# Generate private key for client
+openssl genrsa -out MyClient.key 2048
+
+# Create CSR for client cert
+openssl req -new -key MyClient.key -out MyClient.csr -subj "/CN=MyClient"
+
+# Sign client CSR with Intermediate CA
+openssl x509 -req -in MyClient.csr \
+  -CA ../intermediate/ca.crt -CAkey ../intermediate/ca.key -CAcreateserial \
+  -out MyClient.crt -days 365 -sha256
+
+🔐 Step 4: Bundle into PFX (PKCS#12)
+
+# Combine full chain: Intermediate + Root
+cat ../intermediate/ca.crt ../root/ca.crt > full_chain.crt
+
+# Export client cert, private key, and chain to PFX
+openssl pkcs12 -export \
+  -out MyClient.pfx \
+  -inkey MyClient.key \
+  -in MyClient.crt \
+  -certfile full_chain.crt \
+  -name "MyClient"
