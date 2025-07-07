@@ -410,3 +410,47 @@ openssl pkcs12 -export \
   -in MyClient.crt \
   -certfile full_chain.crt \
   -name "MyClient"
+
+
+var certCollection = new X509Certificate2Collection();
+        certCollection.Import(pfxPath, password, X509KeyStorageFlags.Exportable);
+
+        // Find the end-entity certificate (the one with private key)
+        X509Certificate2 leafCert = null;
+        foreach (var cert in certCollection)
+        {
+            if (cert.HasPrivateKey)
+            {
+                leafCert = cert;
+                break;
+            }
+        }
+
+        if (leafCert == null)
+        {
+            Console.WriteLine("No certificate with private key found in the PFX.");
+            return;
+        }
+
+        // Build the chain
+        var chain = new X509Chain();
+        chain.ChainPolicy.ExtraStore.AddRange(certCollection);
+        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+        bool isValid = chain.Build(leafCert);
+        Console.WriteLine($"Chain is valid: {isValid}");
+
+        // Print the chain
+        Console.WriteLine("Chain elements:");
+        foreach (var element in chain.ChainElements)
+        {
+            Console.WriteLine($"Subject: {element.Certificate.Subject}");
+            Console.WriteLine($"Issuer : {element.Certificate.Issuer}");
+
+            if (element.Certificate.Subject == element.Certificate.Issuer)
+            {
+                Console.WriteLine("This is a ROOT CA.");
+            }
+
+            Console.WriteLine();
+        }
