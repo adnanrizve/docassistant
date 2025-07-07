@@ -454,3 +454,24 @@ var certCollection = new X509Certificate2Collection();
 
             Console.WriteLine();
         }
+
+
+
+
+public static List<X509Certificate2> LoadPemCertificates(string pemPath)
+    {
+        string pemContent = File.ReadAllText(pemPath);
+        var certificates = new List<X509Certificate2>();
+
+        var matches = Regex.Matches(pemContent, "-----BEGIN CERTIFICATE-----(.*?)-----END CERTIFICATE-----", RegexOptions.Singleline);
+
+        foreach (Match match in matches)
+        {
+            string base64 = match.Groups[1].Value.Replace("\r", "").Replace("\n", "");
+            byte[] certBytes = Convert.FromBase64String(base64);
+            var cert = new X509Certificate2(certBytes);
+            certificates.Add(cert);
+        }
+
+        return certificates;
+    }
