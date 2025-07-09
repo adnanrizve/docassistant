@@ -475,3 +475,52 @@ public static List<X509Certificate2> LoadPemCertificates(string pemPath)
 
         return certificates;
     }
+
+
+
+
+✅ User Adoption & Engagement
+
+    Number of Active Users (Daily/Weekly/Monthly Active Users)
+    Indicates how often the tool is used and whether adoption is growing.
+
+    Query Volume per User
+    Measures how engaged users are and how often they rely on the tool for insights.
+
+    First-Time User Success Rate
+    Percentage of users who get a valid result on their first attempt—shows how intuitive the tool is.
+
+✅ Accuracy & Effectiveness
+
+    Query Success Rate
+    Percentage of natural language inputs that result in valid and correct SQL queries and responses.
+
+    User Feedback Score / Satisfaction Rating
+    Ratings provided after a query is answered (e.g., thumbs up/down, 1–5 stars) to assess perceived accuracy and usefulness.
+
+    Query Correction or Rephrasing Rate
+    How often users need to modify or retry their input—can highlight gaps in natural language understanding or SQL generation.
+
+✅ Time & Cost Efficiency
+
+    Average Time to Insight
+    Time from natural language input to data result delivery—demonstrates how much faster decisions can be made.
+
+    Reduction in Analyst Request Load
+    Drop in the number of ad hoc data requests to BI/engineering teams—shows value in reducing internal support workload.
+
+    Operational Cost Savings
+    Estimate of savings due to fewer manual query efforts, fewer delays in insights, or reduced need for support roles.
+
+✅ Business Impact
+
+    Business Decisions Accelerated
+    Number of reported decisions made based on insights from the tool (qualitative + quantitative).
+
+    Feature Adoption Rate (e.g., Conversational Refinement, Domain Customization)
+    Tracks which advanced features users are using most—helps prioritize future enhancements.
+
+    Cross-Department Usage
+    Indicates how widely the tool is adopted across different teams (Sales, Marketing, Ops, etc.).
+
+
