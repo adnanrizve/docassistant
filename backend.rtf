@@ -1,0 +1,259 @@
+{\rtf1\fbidis\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset1 Segoe UI Symbol;}{\f1\fnil Calibri;}{\f2\fnil\fcharset0 Calibri;}{\f3\fnil\fcharset1 Segoe UI Emoji;}{\f4\fnil\fcharset1 Segoe UI Symbol;}}
+{\*\generator Riched20 10.0.17763}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9\u-10179?\u-8947?\f1  \f2 What is Spoofing (STRIDE)?\par
+\par
+Spoofing refers to an attacker pretending to be someone (or something) they\f1\rquote\f2 re not, typically to gain unauthorized access.\par
+\par
+In backend systems (especially .NET APIs), spoofing targets authentication, identity assertion, or trust boundaries.\par
+\f0\u-10179?\u-8921?\f1  \f2 Backend Threat Review \f1\endash  \f2 Spoofing Focus\par
+\f0\u-10179?\u-8959?\f1  \f2 Step-by-Step Threat Review Process\par
+Step\tab What to Review\tab Tools / Techniques\par
+\f3 1\u-497?\f4\u8419?\f2\tab Authentication flow\tab Review how tokens/credentials are issued and validated\par
+\f3 2\u-497?\f4\u8419?\f2\tab Entry points\tab Identify all APIs that require identity validation\par
+\f3 3\u-497?\f4\u8419?\f2\tab Trust assumptions\tab Verify what the backend trusts from frontend, headers, tokens\par
+\f3 4\u-497?\f4\u8419?\f2\tab Token validation logic\tab Inspect JWT parsing and verification code\par
+\f3 5\u-497?\f4\u8419?\f2\tab External integration points\tab Check SSO, OAuth, or identity providers for proper validation\par
+\f3 6\u-497?\f4\u8419?\f2\tab Logs and traceability\tab Ensure failed/successful auth attempts are logged\par
+\f0\u-10178?\u-8728?\f1  \f2 Common Backend Spoofing Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f2 Mitigating Controls\par
+1\tab Forged JWT\tab Attacker crafts a fake token (e.g., with a known key or none)\tab\f0\u-10179?\u-8944?\f1  \f2 Validate JWT signature, issuer (iss), audience (aud), expiration (exp), and alg (use HS256/RS256 appropriately)\par
+2\tab Token with elevated claims\tab Adds "role": "admin" to token payload\tab\f0\u-10179?\u-8944?\f1  \f2 Never trust token claims blindly; verify user privileges server-side from DB if needed\par
+3\tab Replay of stolen token\tab Token intercepted or reused\tab\f4\u9203?\f1  \f2 Use short-lived tokens, rotate refresh tokens, and monitor reuse\par
+4\tab Trusting client headers (e.g., X-UserId)\tab Attacker adds spoofed headers in request\tab\f4\u10060?\f1  \f2 Never trust user identity from headers; derive identity from token only\par
+5\tab Lack of [Authorize] on API endpoints\tab Sensitive endpoint accessible without auth\tab\f0\u-10179?\u-8942?\f1  \f2 Use [Authorize] and [Authorize(Roles = "...")] attributes appropriately\par
+6\tab Improper OAuth / SSO flow\tab Backend trusts user identity without verifying access token\tab\f0\u-10179?\u-8944?\f1  \f2 Validate access tokens with identity provider (e.g., Okta, Azure AD)\par
+7\tab Credential stuffing\tab Reuse of known username/password combos\tab\f0\u-10178?\u-8719?\f1  \f2 Enable rate-limiting, CAPTCHA, and Multi-Factor Authentication (MFA)\par
+8\tab Shared API keys\tab API key reused or leaked\tab\f0\u-10179?\u-8943?\f1  \f2 Prefer OAuth2 tokens over API keys; rotate keys; scope API keys tightly\par
+\f4\u9989?\f1  \f2 Best Practices & Defensive Controls\par
+Area\tab Recommendation\par
+\f0\u-10179?\u-8944?\f1  \f2 Authentication\tab Use standards like OAuth2, OIDC, SAML\par
+\f3\u-10179?\u-8843?\u-497?\f1  \f2 Token Validation\tab Use libraries like Microsoft.IdentityModel.Tokens or System.IdentityModel.Tokens.Jwt\par
+\f0\u-10178?\u-8723?\f1  \f2 Claims Handling\tab Don\f1\rquote\f2 t trust claims from token for critical authorization decisions\f1\emdash\f2 verify from backend or user DB\par
+\f0\u-10178?\u-8719?\f1  \f2 Access Control\tab Implement Role-Based Access Control (RBAC) at API level\par
+\f0\u-10179?\u-8996?\f1  \f2 Logging\tab Log failed logins, invalid tokens, and suspicious login patterns\par
+\f0\u-10179?\u-9015?\f1  \f2 Monitoring\tab Alert on token anomalies (e.g., tokens from new geo/IP locations)\par
+\f0\u-10180?\u-8432?\f1  \f2 TLS Everywhere\tab Enforce HTTPS and HSTS to prevent token interception\par
+\f0\u-10179?\u-8947?\f1  \f2 Code Review Checklist for Spoofing\par
+\f4\u9989?\f2\tab Check\par
+\f0\u-10179?\u-8942?\f2\tab Is [Authorize] applied to every sensitive API?\par
+\f0\u-10179?\u-8943?\f2\tab Are JWTs validated for signature, issuer, audience, expiration?\par
+\f4\u10060?\f2\tab Is any part of user identity coming from request headers or body?\par
+\f0\u-10179?\u-8510?\f2\tab Are roles/claims validated before privileged actions?\par
+\f4\u9203?\f2\tab Are tokens time-bound and revocable?\par
+\f0\u-10178?\u-8706?\f2\tab Are login attempts, auth failures, and token reuse logged?\par
+\par
+\par
+\par
+So in this case, lets focus on backend changes, what are some of the possible ways to review threats related to Tampering and its mitigating controls \par
+ChatGPT said:\par
+\par
+Great \f1\emdash  \f2 let's focus on Tampering threats in the backend (e.g., .NET APIs) and how to review them during code reviews, threat modeling, or security assessments.\par
+\f0\u-10179?\u-8480?\f1  \f2 STRIDE Category: Tampering (Backend-Focused)\par
+\f0\u-10180?\u-8273?\f1  \f2 What is Tampering?\par
+\par
+    Tampering involves unauthorized modification of data, requests, or system behavior \f1\emdash  \f2 either in transit, at rest, or within application logic.\par
+\par
+\f0\u-10179?\u-8959?\f1  \f2 Threat Review Approach for Tampering\par
+Step\tab Review Target\tab What to Ask\par
+\f3 1\u-497?\f4\u8419?\f2\tab API inputs (query, path, body)\tab Can inputs be altered to access or modify unintended data?\par
+\f3 2\u-497?\f4\u8419?\f2\tab Headers and cookies\tab Are any security decisions made based on modifiable headers?\par
+\f3 3\u-497?\f4\u8419?\f2\tab Database operations\tab Are user inputs used in SQL queries without proper handling?\par
+\f3 4\u-497?\f4\u8419?\f2\tab Object deserialization\tab Can attacker manipulate serialized payloads?\par
+\f3 5\u-497?\f4\u8419?\f2\tab Trust boundaries\tab Are you trusting unverified data from clients or third parties?\par
+\f0\u-10178?\u-8728?\f1  \f2 Backend Tampering Threats + Mitigating Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f2 Mitigation\par
+1\tab Parameter tampering\tab Attacker changes userId in request (PUT /users/2) to modify someone else\f1\rquote\f2 s data\tab\f0\u-10179?\u-8942?\f1  \f2 Validate object ownership on server (e.g., user.Id == request.UserId)\par
+2\tab Query string tampering\tab Changes filters, paging, or internal flags (e.g., ?admin=true)\tab\f0\u-10179?\u-8944?\f1  \f2 Never expose sensitive query flags; re-check roles/permissions server-side\par
+3\tab Header tampering\tab Spoofs X-UserId, X-Role headers if backend trusts them\tab\f4\u10060?\f1  \f2 Never trust identity-related headers from client unless added by trusted proxy\par
+4\tab Cookie tampering\tab Modifies client-side cookies to elevate access\tab\f0\u-10179?\u-8944?\f1  \f2 Use signed & encrypted cookies or HttpOnly/Secure cookies\par
+5\tab SQL Injection\tab Injects SQL via raw inputs\tab\f4\u9989?\f1  \f2 Use parameterized queries or ORM (e.g., Entity Framework)\par
+6\tab JSON/XML tampering\tab Alters payload schema or adds malicious fields\tab\f4\u9989?\f1  \f2 Use strict JSON schema validation; reject unknown fields\par
+7\tab Deserialization attacks\tab Sends crafted serialized objects to exploit backend logic\tab\f0\u-10179?\u-8944?\f1  \f2 Avoid insecure deserialization (e.g., BinaryFormatter); whitelist allowed types\par
+8\tab Tampering with config via env vars or headers\tab Overrides behavior via unsafe config mechanisms\tab\f0\u-10179?\u-8942?\f1  \f2 Validate critical config sources; restrict environment overrides in production\par
+9\tab File path manipulation\tab Uploads file with ../../../ to access server paths\tab\f4\u9989?\f1  \f2 Sanitize and validate file paths and names; use path restrictions\par
+\f4\u9989?\f1  \f2 Mitigating Controls by Layer\par
+Layer\tab Control\par
+API Layer\tab - Validate all inputs (length, format, type)\par
+- Use model binding validation attributes (e.g., [Required], [Range])\par
+Authorization Layer\tab - Enforce object/resource ownership\par
+- Never rely on client input for role/privilege decisions\par
+Data Access Layer\tab - Use parameterized queries\par
+- Avoid building SQL via string concatenation\par
+Serialization/Deserialization\tab - Use JSON schema validation\par
+- Avoid insecure deserializers\par
+Infrastructure/Headers\tab - Ignore untrusted headers unless from verified proxy\par
+- Use reverse proxies to strip/add only safe headers\par
+Files\tab - Sanitize filenames\par
+- Restrict uploads to known paths\par
+- Limit file types and extensions\par
+\f0\u-10179?\u-8947?\f1  \f2 Code Review Checklist for Tampering\par
+\f4\u9989?\f2\tab Check\par
+\f0\u-10179?\u-8987?\f2\tab Are inputs validated for length, type, range, and format?\par
+\f0\u-10178?\u-8708?\f2\tab Are all SQL queries parameterized or using ORM?\par
+\f0\u-10179?\u-8944?\f2\tab Is user authorization checked for all resource-modifying operations?\par
+\f0\u-10178?\u-8706?\f2\tab Are request headers validated/sanitized?\par
+\f0\u-10178?\u-8719?\f2\tab Are there any deserialization operations? If yes, are they safe and restricted?\par
+\f0\u-10178?\u-8724?\f2\tab Is JSON schema validation applied on API request bodies?\par
+\f0\u-10179?\u-9022?\f2\tab Are file names/paths validated before saving/uploading?\par
+\f0\u-10178?\u-8720?\f2\tab Is there logging for invalid or tampered requests?\par
+\par
+\par
+\par
+\par
+Focusing on backend changes and the Repudiation category of STRIDE, here\f1\rquote\f2 s how you can review related threats and apply mitigating controls.\par
+\f0\u-10179?\u-8947?\f1  \f2 What is Repudiation?\par
+\par
+Repudiation occurs when an attacker or user denies performing an action, and the system lacks sufficient evidence to prove otherwise. This impacts accountability and non-repudiation.\par
+\f0\u-10179?\u-8959?\f1  \f2 Reviewing Repudiation Threats in Backend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f2\tab Audit Logging\tab Are all sensitive or critical actions logged with user ID, timestamp, and context?\par
+\f3 2\u-497?\f4\u8419?\f2\tab Log Integrity\tab Are logs protected from tampering or unauthorized deletion?\par
+\f3 3\u-497?\f4\u8419?\f2\tab Traceability\tab Can you trace an action back to a specific authenticated user or system?\par
+\f3 4\u-497?\f4\u8419?\f2\tab Authentication Coverage\tab Are all endpoints requiring authentication to avoid anonymous actions?\par
+\f3 5\u-497?\f4\u8419?\f2\tab Log Access Controls\tab Who can view or modify logs? Are logs centralized and access-restricted?\par
+\f0\u-10178?\u-8728?\f1  \f2 Common Repudiation Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f2 Mitigating Controls\par
+1\tab Missing audit logs\tab No record of who performed sensitive actions (e.g., data modification)\tab\f4\u9989?\f1  \f2 Implement detailed audit logs with user identity, IP, timestamp, action details\par
+2\tab Logs can be altered or deleted\tab Attackers or insiders modify logs to hide activity\tab\f4\u9989?\f1  \f2 Use append-only logging, write-once storage, or centralized logging services\par
+3\tab Anonymous or unauthenticated actions\tab Critical operations allowed without login or token\tab\f4\u9989?\f1  \f2 Require authentication on all sensitive endpoints\par
+4\tab Lack of correlation IDs\tab Cannot tie logs and requests across microservices\tab\f4\u9989?\f1  \f2 Use correlation IDs in request headers to trace activities end-to-end\par
+5\tab Poor log retention or backup\tab Logs lost or unavailable during investigations\tab\f4\u9989?\f1  \f2 Enforce log retention policies and offsite backups\par
+6\tab No alerting on suspicious activities\tab Suspicious actions go unnoticed\tab\f4\u9989?\f1  \f2 Implement anomaly detection and alerting on unusual log patterns\par
+\f4\u9989?\f1  \f2 Repudiation Best Practices\par
+Area\tab Recommended Controls\par
+Logging\tab Centralized, immutable logging with detailed context\par
+Authentication\tab Enforce authentication and strong identity verification\par
+Access Controls\tab Restrict who can view or edit logs; implement role-based access\par
+Traceability\tab Use unique correlation IDs and trace logs across systems\par
+Retention\tab Define retention period per compliance needs (e.g., GDPR, HIPAA)\par
+Alerting & Monitoring\tab Setup real-time monitoring and alerts for anomalies\par
+\f0\u-10179?\u-8947?\f1  \f2 Code Review / Security Assessment Checklist\par
+\f4\u9989?\f2\tab Check\par
+\f0\u-10178?\u-8706?\f2\tab Are all sensitive user actions logged with identity and timestamp?\par
+\f0\u-10179?\u-8942?\f2\tab Are logs protected from tampering (write-once, append-only, or centralized)?\par
+\f0\u-10179?\u-8944?\f2\tab Are all sensitive endpoints protected by authentication and authorization?\par
+\f3\u-10179?\u-8843?\u-497?\f2\tab Are correlation IDs used to trace requests through the system?\par
+\f3\u-10179?\u-8848?\u-497?\f2\tab Is log retention and archival handled according to policy?\par
+\f0\u-10179?\u-8536?\f2\tab Are there alerts for suspicious or repeated failed activities?\par
+\par
+\par
+So in this case, lets focus on backend changes, what are some of the possible ways to review threats related to Information Disclosure and its mitigating controls \par
+ChatGPT said:\par
+\par
+Absolutely! Let\f1\rquote\f2 s focus on Information Disclosure threats related to backend changes and how to review them effectively along with key mitigations.\par
+\f0\u-10179?\u-8947?\f1  \f2 What is Information Disclosure?\par
+\par
+Information Disclosure occurs when sensitive or confidential information is exposed to unauthorized users, either intentionally or accidentally.\par
+\f0\u-10179?\u-8959?\f1  \f2 Reviewing Information Disclosure Threats in Backend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f2\tab Error Handling\tab Are stack traces, debug info, or internal errors exposed in API responses?\par
+\f3 2\u-497?\f4\u8419?\f2\tab Data Exposure in Responses\tab Is sensitive data (PII, credentials, secrets) included in API outputs?\par
+\f3 3\u-497?\f4\u8419?\f2\tab Configuration Exposure\tab Are secrets, keys, or internal configs exposed via API or logs?\par
+\f3 4\u-497?\f4\u8419?\f2\tab Logging Practices\tab Are sensitive values logged in plain text?\par
+\f3 5\u-497?\f4\u8419?\f2\tab Access Controls on Data\tab Are sensitive fields protected by authorization checks?\par
+\f3 6\u-497?\f4\u8419?\f2\tab Metadata Exposure\tab Does API reveal internal info like database schema, software versions?\par
+\f0\u-10178?\u-8728?\f1  \f2 Common Information Disclosure Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f2 Mitigations\par
+1\tab Detailed error messages\tab API returns full stack trace or internal exception\tab\f4\u9989?\f1  \f2 Implement global error handling middleware to return sanitized errors\par
+2\tab Sensitive data in API response\tab Returning PII or secret keys in JSON responses\tab\f4\u9989?\f1  \f2 Apply response filtering and data masking; enforce field-level authorization\par
+3\tab Exposure of configuration values\tab Exposing secrets via environment variables or config endpoints\tab\f4\u9989?\f1  \f2 Secure config management; do not expose internal configs via APIs\par
+4\tab Sensitive data in logs\tab Logging passwords, tokens, or PII in cleartext\tab\f4\u9989?\f1  \f2 Mask or redact sensitive data in logs; follow logging guidelines\par
+5\tab Metadata or version info leaks\tab API or headers reveal backend tech/version info\tab\f4\u9989?\f1  \f2 Disable verbose headers and metadata endpoints in production\par
+6\tab Over-permissive CORS\tab Allows cross-origin reads from untrusted domains\tab\f4\u9989?\f1  \f2 Restrict CORS policies to trusted origins only\par
+\f4\u9989?\f1  \f2 Best Practices & Mitigations\par
+Area\tab Controls\par
+Error Handling\tab Use custom error pages and generic error messages in APIs\par
+Data Filtering\tab Implement DTOs or ViewModels that exclude sensitive fields\par
+Config Management\tab Store secrets securely (e.g., Azure Key Vault, AWS Secrets Manager)\par
+Logging\tab Scrub logs of sensitive info, encrypt logs if needed\par
+CORS & Headers\tab Strict CORS policy, remove Server and X-Powered-By headers\par
+Access Controls\tab Use RBAC and attribute-level security for sensitive data\par
+\f0\u-10179?\u-8947?\f1  \f2 Code Review / Security Assessment Checklist\par
+\f4\u9989?\f2\tab Check\par
+\f4\u10060?\f2\tab Are stack traces or detailed errors returned to clients?\par
+\f0\u-10179?\u-8944?\f2\tab Are sensitive fields excluded or masked in API responses?\par
+\f0\u-10179?\u-8942?\f2\tab Are secrets/configuration values protected and never exposed?\par
+\f0\u-10178?\u-8706?\f2\tab Are logs reviewed for sensitive information leakage?\par
+\f0\u-10180?\u-8432?\f2\tab Is CORS restricted to known/trusted origins?\par
+\f3\u-10179?\u-8479?\u-497?\f2\tab Are HTTP headers sanitized to hide server info?\par
+\par
+\par
+\f0\u-10179?\u-8947?\f1  \f2 What is Denial of Service?\par
+\par
+Denial of Service occurs when an attacker exhausts resources (CPU, memory, bandwidth) or overwhelms the backend, causing legitimate requests to fail or degrade performance.\par
+\f0\u-10179?\u-8959?\f1  \f2 Reviewing DoS Threats in Backend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f2\tab API Endpoint Load\tab Are any endpoints computationally expensive or unbounded?\par
+\f3 2\u-497?\f4\u8419?\f2\tab Input Validation\tab Can large or deeply nested payloads cause excessive resource use?\par
+\f3 3\u-497?\f4\u8419?\f2\tab Rate Limiting\tab Is there protection against excessive requests from one client/IP?\par
+\f3 4\u-497?\f4\u8419?\f2\tab Resource Management\tab Are file uploads restricted in size/type?\par
+\f3 5\u-497?\f4\u8419?\f2\tab Third-party Calls\tab Could external service calls cause cascading delays or failures?\par
+\f3 6\u-497?\f4\u8419?\f2\tab Caching & Throttling\tab Are caching and throttling mechanisms in place?\par
+\f0\u-10178?\u-8728?\f1  \f2 Common Denial of Service Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f2 Mitigation Controls\par
+1\tab Flood of API calls\tab Attacker sends many requests, exhausting server CPU or bandwidth\tab\f0\u-10179?\u-8942?\f1  \f2 Implement rate limiting (per IP/user), API throttling\par
+2\tab Large or malicious payloads\tab Sends huge JSON/XML causing memory exhaustion or parser crash\tab\f4\u9989?\f1  \f2 Enforce payload size limits and depth restrictions\par
+3\tab Expensive queries or loops\tab Requests that trigger slow DB queries or infinite loops\tab\f4\u9989?\f1  \f2 Optimize queries, add query timeouts and max execution time\par
+4\tab File upload abuse\tab Uploading very large or many files to exhaust disk/storage\tab\f4\u9989?\f1  \f2 Limit file size and type; use virus scanning\par
+5\tab Slowloris-style attacks\tab Partial requests kept open, consuming connections\tab\f0\u-10179?\u-8944?\f1  \f2 Use reverse proxy/web server protections and timeouts\par
+6\tab Resource exhaustion in dependencies\tab External service call delays cascade\tab\f4\u9989?\f1  \f2 Use circuit breakers and timeouts for external calls\par
+\f4\u9989?\f1  \f2 Best Practices for Denial of Service Mitigation\par
+Area\tab Controls\par
+Rate Limiting\tab Use API gateways, middleware to limit calls per user/IP\par
+Payload Validation\tab Restrict max payload size and validate input structure\par
+Timeouts\tab Set request, DB query, and external call timeouts\par
+Caching\tab Cache frequent responses to reduce load\par
+File Handling\tab Limit upload sizes, types, and scan files\par
+Network\tab Use firewalls, WAF, and DDoS protection services (e.g., AWS Shield)\par
+Monitoring\tab Monitor traffic patterns and alert on anomalies\par
+\f0\u-10179?\u-8947?\f1  \f2 Code Review / Security Assessment Checklist\par
+\f4\u9989?\f2\tab Check\par
+\f3\u9201?\u-497?\f2\tab Are rate limits applied on all public or heavy-use APIs?\par
+\f0\u-10179?\u-8986?\f2\tab Is payload size validated and limited?\par
+\f0\u-10179?\u-9026?\f2\tab Are file uploads restricted and scanned?\par
+\f0\u-10178?\u-8711?\f2\tab Are slow or expensive DB queries optimized or limited?\par
+\f0\u-10179?\u-8956?\f2\tab Are circuit breakers/timeouts used for external calls?\par
+\f3\u-10179?\u-8479?\u-497?\f2\tab Are network-level DoS protections configured?\par
+\par
+\par
+\par
+\par
+\f0\u-10179?\u-8947?\f1  \f2 What is Elevation of Privilege?\par
+\par
+Elevation of Privilege occurs when an attacker or user gains higher access or permissions than authorized\f1\emdash\f2 allowing unauthorized actions or data access.\par
+\f0\u-10179?\u-8959?\f1  \f2 Reviewing Elevation of Privilege Threats in Backend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f2\tab Role & Permission Checks\tab Are authorization checks consistently applied on sensitive endpoints?\par
+\f3 2\u-497?\f4\u8419?\f2\tab Token & Claims Validation\tab Are roles/claims validated and verified server-side?\par
+\f3 3\u-497?\f4\u8419?\f2\tab Privilege Boundaries\tab Are privilege boundaries well-defined and enforced?\par
+\f3 4\u-497?\f4\u8419?\f2\tab Admin & System APIs\tab Are management endpoints protected and restricted?\par
+\f3 5\u-497?\f4\u8419?\f2\tab Least Privilege Principle\tab Are users, services, and tokens granted only necessary permissions?\par
+\f3 6\u-497?\f4\u8419?\f2\tab Elevation Attack Vectors\tab Check for logic flaws allowing privilege escalation (e.g., parameter tampering)\par
+\f0\u-10178?\u-8728?\f1  \f2 Common Elevation of Privilege Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f2 Mitigating Controls\par
+1\tab Missing or weak role checks\tab API endpoint accessible without proper role validation\tab\f0\u-10179?\u-8942?\f1  \f2 Use [Authorize(Roles = "...")] or custom policies on all sensitive APIs\par
+2\tab Tampering with roles in token claims\tab Attacker modifies role in JWT or request to escalate privileges\tab\f0\u-10179?\u-8944?\f1  \f2 Validate claims server-side and never trust client-supplied roles\par
+3\tab Insecure default roles\tab New users get admin or overly permissive roles by default\tab\f4\u9989?\f1  \f2 Enforce secure default roles with minimal privileges\par
+4\tab Unprotected admin endpoints\tab Admin or debug APIs exposed without authentication\tab\f0\u-10179?\u-8942?\f1  \f2 Restrict access via network controls and authentication\par
+5\tab Broken object-level authorization\tab User accesses or modifies objects they don\f1\rquote\f2 t own\tab\f4\u9989?\f1  \f2 Implement ownership checks on every resource access\par
+6\tab Abuse of service accounts or tokens\tab Tokens issued with excessive rights\tab\f0\u-10179?\u-8943?\f1  \f2 Follow least privilege; issue scoped tokens with minimal permissions\par
+7\tab Flawed privilege elevation via logic bugs\tab Application logic bypasses authorization checks under certain conditions\tab\f3\u-10179?\u-8480?\u-497?\f1  \f2 Conduct thorough code reviews and security testing\par
+\f4\u9989?\f1  \f2 Best Practices for Elevation of Privilege Mitigation\par
+Area\tab Controls\par
+Authorization\tab Enforce role-based or claim-based authorization consistently\par
+Token Security\tab Use signed tokens, validate claims, avoid client role trust\par
+Least Privilege\tab Grant minimal privileges and segregate duties\par
+Secure Defaults\tab Apply secure default roles and permissions\par
+Audit & Monitoring\tab Log privileged actions and monitor anomalies\par
+Admin Protection\tab Restrict admin APIs/network access to trusted users\par
+Security Testing\tab Perform privilege escalation testing (manual and automated)\par
+\f0\u-10179?\u-8947?\f1  \f2 Code Review / Security Assessment Checklist\par
+\f4\u9989?\f2\tab Check\par
+\f0\u-10179?\u-8942?\f2\tab Are all privileged endpoints protected with proper role checks?\par
+\f0\u-10179?\u-8943?\f2\tab Are token claims validated and never blindly trusted?\par
+\f0\u-10179?\u-8533?\f2\tab Are default roles assigned securely?\par
+\f3\u-10179?\u-8843?\u-497?\f2\tab Are object ownership and permission checks implemented?\par
+\f3\u-10179?\u-8480?\u-497?\f2\tab Have you tested for logic flaws that allow privilege escalation?\par
+\f0\u-10179?\u-8996?\f2\tab Are admin/debug endpoints protected and access-limited?\par
+}
+ 

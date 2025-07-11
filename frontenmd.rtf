@@ -1,0 +1,232 @@
+{\rtf1\fbidis\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil Calibri;}{\f2\fnil\fcharset1 Segoe UI Symbol;}{\f3\fnil\fcharset1 Segoe UI Emoji;}{\f4\fnil\fcharset1 Segoe UI Symbol;}}
+{\*\generator Riched20 10.0.17763}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 Sure! Focusing on Angular frontend changes and Spoofing threats, here\f1\rquote\f0 s how you can review and mitigate them effectively.\par
+\f2\u-10179?\u-8947?\f1  \f0 What is Spoofing in Frontend?\par
+\par
+Spoofing on the frontend usually means an attacker impersonates a user or system by tampering with tokens, session data, or UI flows to bypass authentication or masquerade as someone else.\par
+\f2\u-10179?\u-8959?\f1  \f0 Reviewing Spoofing Threats in Angular Frontend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f0\tab Token Storage & Handling\tab Are tokens (JWT, session IDs) stored securely (avoid localStorage if possible)?\par
+\f3 2\u-497?\f4\u8419?\f0\tab Authentication Flow\tab Is login/logout handled securely with proper token issuance/expiration?\par
+\f3 3\u-497?\f4\u8419?\f0\tab Route Guards & Auth Checks\tab Are Angular route guards implemented properly to protect routes?\par
+\f3 4\u-497?\f4\u8419?\f0\tab Input & Parameter Trust\tab Are user IDs or auth data passed from frontend to backend protected?\par
+\f3 5\u-497?\f4\u8419?\f0\tab Token Validation\tab Does the backend fully validate tokens instead of relying on frontend checks?\par
+\f2\u-10178?\u-8728?\f1  \f0 Common Frontend Spoofing Threats + Mitigating Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f0 Mitigations\par
+1\tab Token theft via XSS\tab Attacker injects script to steal tokens from localStorage\tab\f2\u-10179?\u-8944?\f1  \f0 Use HttpOnly cookies for tokens; implement Content Security Policy (CSP)\par
+2\tab Token tampering\tab Modifies JWT or session data stored in browser\tab\f4\u9989?\f1  \f0 Validate token signature and claims on backend\par
+3\tab Bypassing login UI\tab Navigates directly to protected routes without login\tab\f2\u-10179?\u-8942?\f1  \f0 Implement Angular route guards (canActivate) and backend auth enforcement\par
+4\tab Token reuse or replay\tab Uses expired or stolen tokens\tab\f4\u9203?\f1  \f0 Use short-lived tokens with refresh tokens and revoke compromised tokens\par
+5\tab Insecure token storage\tab Storing tokens in insecure places (e.g., localStorage)\tab\f2\u-10179?\u-8944?\f1  \f0 Prefer HttpOnly, Secure cookies; avoid localStorage for sensitive tokens\par
+6\tab Using insecure login flows\tab Login forms without HTTPS or missing MFA\tab\f2\u-10180?\u-8432?\f1  \f0 Enforce HTTPS; enable MFA on authentication backend\par
+7\tab Manipulating auth headers or requests\tab Tampering with headers or requests sent by frontend\tab\f4\u10060?\f1  \f0 Backend should never trust client headers for identity\par
+\f4\u9989?\f1  \f0 Best Practices for Spoofing Mitigation in Angular\par
+Area\tab Controls\par
+Token Storage\tab Use HttpOnly, Secure cookies; avoid localStorage/sessionStorage for tokens\par
+Route Protection\tab Implement Angular route guards and redirect unauthenticated users\par
+Secure Communication\tab Enforce HTTPS for all frontend-backend communication\par
+Input Validation\tab Never trust client-side identity data; always validate on backend\par
+CSP & XSS Prevention\tab Use strong Content Security Policy and sanitize all inputs\par
+Token Expiry & Rotation\tab Use short-lived tokens and refresh tokens with backend revocation\par
+Login Flow Security\tab Enforce MFA, CAPTCHA, and monitor failed logins\par
+\f2\u-10179?\u-8947?\f1  \f0 Angular Frontend Code Review Checklist (Spoofing)\par
+\f4\u9989?\f0\tab Check\par
+\f2\u-10179?\u-8942?\f0\tab Are tokens stored securely (prefer HttpOnly cookies)?\par
+\f2\u-10179?\u-8944?\f0\tab Are Angular route guards properly implemented?\par
+\f2\u-10180?\u-8432?\f0\tab Is all communication over HTTPS?\par
+\f2\u-10179?\u-8533?\f0\tab Is any authentication logic only on frontend (avoid trusting it)?\par
+\f3\u-10179?\u-8479?\u-497?\f0\tab Are login flows protected with MFA and/or CAPTCHA?\par
+\f2\u-10178?\u-8711?\f0\tab Is CSP implemented and XSS mitigated?\par
+\par
+\par
+\par
+\par
+\par
+\f2\u-10179?\u-8947?\f1  \f0 What is Tampering in Frontend?\par
+\par
+Tampering means unauthorized modification of data, UI elements, requests, or client-side logic, potentially allowing attackers to manipulate app behavior or data sent to backend.\par
+\f2\u-10179?\u-8959?\f1  \f0 Reviewing Tampering Threats in Angular Frontend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f0\tab Client-side Data Integrity\tab Are any critical data or state stored/modifiable on client side without validation?\par
+\f3 2\u-497?\f4\u8419?\f0\tab Input Validation\tab Are user inputs validated/sanitized before sending to backend?\par
+\f3 3\u-497?\f4\u8419?\f0\tab Request Payloads\tab Can request parameters or payloads be manipulated?\par
+\f3 4\u-497?\f4\u8419?\f0\tab UI Controls & Logic\tab Can UI elements be tampered to bypass restrictions or escalate privileges?\par
+\f3 5\u-497?\f4\u8419?\f0\tab Communication Security\tab Is data sent over HTTPS and protected from interception or modification?\par
+\f2\u-10178?\u-8728?\f1  \f0 Common Frontend Tampering Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f0 Mitigations\par
+1\tab Manipulating form data\tab User modifies form fields (e.g., prices, user roles) before submission\tab\f2\u-10179?\u-8942?\f1  \f0 Validate and sanitize all inputs server-side; do not trust client data\par
+2\tab Tampering with Angular state\tab Modifying variables or client state via browser console or devtools\tab\f4\u9989?\f1  \f0 Keep sensitive logic and validation on backend\par
+3\tab Bypassing UI restrictions\tab Disabling buttons or hiding UI controls to bypass workflow\tab\f2\u-10179?\u-8942?\f1  \f0 Enforce all restrictions also on backend\par
+4\tab Modifying request payloads\tab Changing JSON payloads or query params\tab\f2\u-10179?\u-8944?\f1  \f0 Validate payloads on backend; use JWT or signed data if needed\par
+5\tab Cross-site scripting (XSS)\tab Inject scripts to manipulate UI or steal data\tab\f3\u-10179?\u-8479?\u-497?\f1  \f0 Implement strong Content Security Policy (CSP) and sanitize inputs\par
+6\tab Manipulating local/session storage\tab Changing stored tokens, flags, or user roles\tab\f2\u-10179?\u-8944?\f1  \f0 Avoid storing sensitive info in localStorage/sessionStorage; use HttpOnly cookies\par
+7\tab Replay attacks\tab Reusing old requests or tokens\tab\f4\u9203?\f1  \f0 Use nonces, timestamps, and token expiry\par
+\f4\u9989?\f1  \f0 Best Practices for Tampering Mitigation in Angular\par
+Area\tab Controls\par
+Input Validation\tab Always validate and sanitize input on backend\par
+State Management\tab Keep sensitive state and logic on backend; avoid trust in client state\par
+Communication\tab Use HTTPS and secure transport\par
+UI Security\tab Enforce restrictions in backend, not just UI\par
+Storage Security\tab Avoid sensitive data in localStorage/sessionStorage; prefer HttpOnly cookies\par
+XSS Prevention\tab Use Angular\f1\rquote\f0 s built-in sanitization and CSP headers\par
+Request Integrity\tab Use signed tokens or anti-CSRF tokens as needed\par
+\f2\u-10179?\u-8947?\f1  \f0 Angular Frontend Code Review Checklist (Tampering)\par
+\f4\u9989?\f0\tab Check\par
+\f2\u-10179?\u-8942?\f0\tab Are all inputs validated on backend, not just frontend?\par
+\f2\u-10178?\u-8711?\f0\tab Is Angular sanitization used for HTML/inputs?\par
+\f2\u-10179?\u-8944?\f0\tab Are sensitive states and logic kept off client?\par
+\f2\u-10180?\u-8432?\f0\tab Is HTTPS enforced?\par
+\f2\u-10179?\u-8533?\f0\tab Is sensitive data stored securely (avoid localStorage for secrets)?\par
+\f3\u-10179?\u-8479?\u-497?\f0\tab Are UI restrictions duplicated on backend?\par
+\par
+\par
+Great! Let\f1\rquote\f0 s focus on Repudiation threats related to Angular frontend changes and how to review and mitigate them.\par
+\f2\u-10179?\u-8947?\f1  \f0 What is Repudiation in Frontend?\par
+\par
+Repudiation means a user denies performing an action, and the system cannot prove otherwise due to lack of evidence or logging.\par
+\par
+In frontend, this mainly relates to lack of traceability or audit data sent or generated during user actions.\par
+\f2\u-10179?\u-8959?\f1  \f0 Reviewing Repudiation Threats in Angular Frontend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f0\tab Client-side Logging\tab Are critical user actions captured and sent to backend for auditing?\par
+\f3 2\u-497?\f4\u8419?\f0\tab Request Integrity\tab Are actions tied to authenticated user sessions?\par
+\f3 3\u-497?\f4\u8419?\f0\tab Non-repudiation Tokens\tab Are requests signed or include nonces/timestamps to prevent replay?\par
+\f3 4\u-497?\f4\u8419?\f0\tab UI Feedback\tab Does UI show confirmations for critical actions?\par
+\f3 5\u-497?\f4\u8419?\f0\tab Error Handling\tab Are errors logged with sufficient context?\par
+\f2\u-10178?\u-8728?\f1  \f0 Common Frontend Repudiation Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f0 Mitigations\par
+1\tab Lack of audit data sent\tab Actions performed without backend logs\tab\f4\u9989?\f1  \f0 Send detailed user action logs with user ID, timestamp\par
+2\tab Replay attacks\tab Re-submission of requests to repeat actions\tab\f2\u-10179?\u-8944?\f1  \f0 Use nonces, timestamps, and CSRF tokens\par
+3\tab No user session linkage\tab Actions performed without tying to authenticated user\tab\f2\u-10179?\u-8942?\f1  \f0 Include user/session IDs in all action requests\par
+4\tab Insufficient confirmation\tab UI does not confirm irreversible actions\tab\f4\u9989?\f1  \f0 Add confirmation dialogs for critical operations\par
+5\tab Missing error reporting\tab Errors not reported to backend for investigation\tab\f2\u-10178?\u-8706?\f1  \f0 Implement frontend error reporting to backend\par
+\f4\u9989?\f1  \f0 Best Practices for Repudiation Mitigation in Angular\par
+Area\tab Controls\par
+Audit Logging\tab Send detailed action logs to backend with user/session info\par
+Request Integrity\tab Use anti-replay mechanisms (nonces, timestamps) and CSRF protection\par
+Session Management\tab Ensure user identity is included in all requests\par
+UI Design\tab Add confirmations and clear feedback for critical actions\par
+Error Monitoring\tab Implement frontend error tracking and reporting\par
+\f2\u-10179?\u-8947?\f1  \f0 Angular Frontend Code Review Checklist (Repudiation)\par
+\f4\u9989?\f0\tab Check\par
+\f2\u-10178?\u-8706?\f0\tab Are critical user actions logged and sent to backend?\par
+\f2\u-10179?\u-8944?\f0\tab Are requests protected with CSRF tokens and nonces?\par
+\f3\u-10179?\u-8479?\u-497?\f0\tab Is user/session identity included in all requests?\par
+\f3\u9888?\u-497?\f0\tab Are confirmation dialogs used for irreversible actions?\par
+\f2\u-10179?\u-9186?\f0\tab Is error reporting implemented and tested?\par
+\par
+\par
+\par
+\par
+\par
+\f2\u-10179?\u-8947?\f1  \f0 What is Information Disclosure in Frontend?\par
+\par
+Information Disclosure means exposing sensitive data unintentionally to users or attackers, such as PII, secrets, or internal implementation details.\par
+\f2\u-10179?\u-8959?\f1  \f0 Reviewing Information Disclosure Threats in Angular Frontend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f0\tab Sensitive Data in UI\tab Is any sensitive info (e.g., tokens, passwords, PII) rendered or exposed in the UI?\par
+\f3 2\u-497?\f4\u8419?\f0\tab Source Code Exposure\tab Are secrets (API keys, credentials) embedded in frontend code or config files?\par
+\f3 3\u-497?\f4\u8419?\f0\tab Debug or Logging Info\tab Are debug messages or logs shown in production UI?\par
+\f3 4\u-497?\f4\u8419?\f0\tab API Responses\tab Does frontend fetch or expose sensitive data not needed for user?\par
+\f3 5\u-497?\f4\u8419?\f0\tab CORS and Browser Policies\tab Are CORS policies restricting data sharing appropriately?\par
+\f3 6\u-497?\f4\u8419?\f0\tab Build Artifacts\tab Are sourcemaps or debug files exposed publicly?\par
+\f2\u-10178?\u-8728?\f1  \f0 Common Frontend Information Disclosure Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f0 Mitigations\par
+1\tab Embedding secrets in code\tab Hardcoded API keys or secrets in JS files\tab\f2\u-10179?\u-8942?\f1  \f0 Move secrets to backend; use environment variables and secure vaults\par
+2\tab Exposing sensitive UI data\tab Showing tokens, user PII, or config info in HTML or devtools\tab\f4\u9989?\f1  \f0 Avoid rendering sensitive info; mask or redact PII\par
+3\tab Debug logs in production\tab Console logs or debug info visible in production\tab\f4\u10060?\f1  \f0 Remove debug logs before deployment; use environment flags\par
+4\tab Excessive data in API responses\tab Fetching more data than needed (e.g., full user DB)\tab\f2\u-10179?\u-8944?\f1  \f0 Limit data in responses; filter sensitive fields server-side\par
+5\tab Open CORS policies\tab Allowing any origin to access APIs\tab\f2\u-10179?\u-8942?\f1  \f0 Restrict CORS to trusted domains only\par
+6\tab Publicly exposed sourcemaps\tab Sourcemaps reveal code structure and secrets\tab\f4\u9989?\f1  \f0 Disable sourcemap publishing in production builds\par
+\f4\u9989?\f1  \f0 Best Practices for Information Disclosure Mitigation in Angular\par
+Area\tab Controls\par
+Secrets Management\tab Never embed secrets in frontend code\par
+UI Data Handling\tab Mask or redact sensitive info in UI\par
+Logging\tab Remove debug logs from production builds\par
+API Consumption\tab Request minimal necessary data; enforce backend filtering\par
+CORS\tab Restrict origins, methods, and headers in CORS policy\par
+Build Process\tab Disable sourcemaps and debug artifacts for production\par
+\f2\u-10179?\u-8947?\f1  \f0 Angular Frontend Code Review Checklist (Information Disclosure)\par
+\f4\u9989?\f0\tab Check\par
+\f2\u-10179?\u-8942?\f0\tab Are secrets absent from frontend source and configs?\par
+\f2\u-10179?\u-8495?\f0\tab Are debug logs removed from production builds?\par
+\f2\u-10179?\u-9152?\f0\tab Is sensitive user data masked or excluded in UI?\par
+\f2\u-10180?\u-8432?\f0\tab Are CORS policies restricted to trusted origins?\par
+\f3\u-10179?\u-8766?\u-497?\f0\tab Are sourcemaps disabled in production?\par
+\par
+\par
+\par
+\par
+\f2\u-10179?\u-8947?\f1  \f0 What is Denial of Service in Frontend?\par
+\par
+Denial of Service in the frontend context typically involves an attacker or buggy client causing excessive resource consumption (CPU, memory, bandwidth) or flooding backend APIs with too many requests, degrading system availability.\par
+\f2\u-10179?\u-8959?\f1  \f0 Reviewing Denial of Service Threats in Angular Frontend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f0\tab Unrestricted API Calls\tab Can the frontend trigger excessive or repeated API calls?\par
+\f3 2\u-497?\f4\u8419?\f0\tab Input Validation\tab Are inputs validated client-side to reduce unnecessary backend processing?\par
+\f3 3\u-497?\f4\u8419?\f0\tab Throttling & Debouncing\tab Are user inputs or actions throttled/debounced to limit request frequency?\par
+\f3 4\u-497?\f4\u8419?\f0\tab Resource Intensive Operations\tab Are there client-side processes (e.g., large data parsing) that can freeze UI?\par
+\f3 5\u-497?\f4\u8419?\f0\tab UI Feedback & Limits\tab Does UI limit or warn users about resource usage or request limits?\par
+\f2\u-10178?\u-8728?\f1  \f0 Common Frontend Denial of Service Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f0 Mitigations\par
+1\tab Rapid repeated API calls\tab Automated or manual spamming of API requests\tab\f2\u-10179?\u-8942?\f1  \f0 Implement client-side throttling/debouncing; backend rate limiting\par
+2\tab Large payloads from frontend\tab Uploading or processing large files/data\tab\f4\u9989?\f1  \f0 Enforce file size/type limits and client-side validation\par
+3\tab Heavy client-side computation\tab Infinite loops or heavy rendering freezing UI\tab\f3\u-10179?\u-8480?\u-497?\f1  \f0 Optimize code; use web workers for heavy tasks\par
+4\tab Excessive event listeners\tab Adding too many event handlers causing slowdown\tab\f4\u9989?\f1  \f0 Clean up unused listeners; limit event bindings\par
+5\tab Memory leaks\tab Poor resource management causing slowdowns\tab\f2\u-10179?\u-8947?\f1  \f0 Use browser devtools to detect leaks and fix them\par
+\f4\u9989?\f1  \f0 Best Practices for Denial of Service Mitigation in Angular\par
+Area\tab Controls\par
+API Request Control\tab Throttle/debounce user-triggered API calls\par
+Input Validation\tab Validate and limit inputs before sending to backend\par
+Performance Optimization\tab Avoid blocking UI; use async operations and web workers\par
+Resource Limits\tab Enforce upload size and type restrictions client-side\par
+Monitoring\tab Use performance monitoring tools to detect slowdowns/leaks\par
+\f2\u-10179?\u-8947?\f1  \f0 Angular Frontend Code Review Checklist (Denial of Service)\par
+\f4\u9989?\f0\tab Check\par
+\f2\u-10179?\u-8956?\f0\tab Are API calls throttled or debounced appropriately?\par
+\f2\u-10179?\u-8986?\f0\tab Is client-side input validation limiting payload size?\par
+\f3\u9881?\u-497?\f0\tab Are heavy computations optimized or offloaded?\par
+\f2\u-10178?\u-8711?\f0\tab Are event listeners managed to avoid excess?\par
+\f3\u-10179?\u-8480?\u-497?\f0\tab Is performance monitored and memory leaks addressed?\par
+\par
+\par
+\par
+\f2\u-10179?\u-8947?\f1  \f0 What is Elevation of Privilege in Frontend?\par
+\par
+Elevation of Privilege means a user or attacker gains higher permissions or access than they should, often by tampering with UI elements, tokens, or client-side logic.\par
+\f2\u-10179?\u-8959?\f1  \f0 Reviewing Elevation of Privilege Threats in Angular Frontend\par
+Step\tab What to Review\tab Details\par
+\f3 1\u-497?\f4\u8419?\f0\tab UI Element Controls\tab Can buttons, menus, or forms be manipulated to access restricted features?\par
+\f3 2\u-497?\f4\u8419?\f0\tab Client-Side Role Checks\tab Are roles or permissions enforced only on frontend without backend validation?\par
+\f3 3\u-497?\f4\u8419?\f0\tab Token & Session Handling\tab Are tokens (JWT etc.) protected from tampering?\par
+\f3 4\u-497?\f4\u8419?\f0\tab API Request Authorization\tab Are API calls authorized on backend regardless of frontend restrictions?\par
+\f3 5\u-497?\f4\u8419?\f0\tab User Input Tampering\tab Can user manipulate inputs to escalate privileges (e.g., setting own role)?\par
+\f2\u-10178?\u-8728?\f1  \f0 Common Frontend Elevation of Privilege Threats + Controls\par
+#\tab Threat\tab How It Happens\tab\f4\u9989?\f1  \f0 Mitigations\par
+1\tab Hidden or disabled UI elements enabled\tab Attacker enables hidden admin buttons via browser devtools\tab\f2\u-10179?\u-8942?\f1  \f0 Enforce all role checks on backend; frontend restrictions only for UX\par
+2\tab Client-side role spoofing\tab Modifying JWT or local/session storage roles\tab\f4\u9989?\f1  \f0 Validate tokens on backend; sign and verify JWTs\par
+3\tab Manipulating API calls\tab Changing request parameters to escalate privileges\tab\f2\u-10179?\u-8944?\f1  \f0 Backend authorization and input validation\par
+4\tab Default or insecure roles on frontend\tab Assigning overly permissive roles by default\tab\f4\u9989?\f1  \f0 Apply least privilege; assign minimal frontend roles\par
+5\tab Bypassing route guards\tab Navigating to protected routes by URL manipulation\tab\f2\u-10179?\u-8942?\f1  \f0 Use Angular route guards + backend authorization\par
+6\tab Privilege escalation via logic bugs\tab Flaws in client logic allowing unauthorized actions\tab\f3\u-10179?\u-8480?\u-497?\f1  \f0 Code reviews and security testing\par
+\f4\u9989?\f1  \f0 Best Practices for Elevation of Privilege Mitigation in Angular\par
+Area\tab Controls\par
+Backend Enforcement\tab Always enforce authorization server-side\par
+Token Security\tab Use signed JWTs and validate claims on backend\par
+UI Restrictions\tab Use frontend restrictions for UX, not security\par
+Route Guards\tab Implement Angular route guards properly\par
+Input Validation\tab Validate and sanitize all user inputs\par
+Testing & Reviews\tab Conduct thorough security testing and code reviews\par
+\f2\u-10179?\u-8947?\f1  \f0 Angular Frontend Code Review Checklist (Elevation of Privilege)\par
+\f4\u9989?\f0\tab Check\par
+\f2\u-10179?\u-8942?\f0\tab Are all critical authorizations enforced on backend?\par
+\f2\u-10179?\u-8944?\f0\tab Are tokens signed and verified server-side?\par
+\f2\u-10179?\u-8533?\f0\tab Is there no reliance on client roles for security?\par
+\f3\u-10179?\u-8479?\u-497?\f0\tab Are Angular route guards implemented correctly?\par
+\f2\u-10178?\u-8711?\f0\tab Are user inputs validated and sanitized?\par
+\f3\u-10179?\u-8480?\u-497?\f0\tab Has privilege escalation been tested?\par
+\par
+\par
+\par
+}
+ 
