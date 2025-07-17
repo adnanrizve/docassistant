@@ -1304,8 +1304,115 @@ Testing & Reviews	Conduct thorough security testing and code reviews
 
 
 
+I have .net background job running inside AWS ECS and connecting to Aurora Postgresql by using IAM authentications. I have observed that whenever job triggered it always uses the connection string which it got at the time of initialization of application. Since due to IAM authentication, the token is expiring after every 15 minutes so the job is not able to perform database operation after the token get expired. What could be issue?
+ChatGPT said:
 
+You're running into a common issue when using IAM-based authentication for Amazon Aurora PostgreSQL: the temporary authentication token used for database connections expires after 15 minutes, but your .NET background job is reusing a stale connection string or connection pool that still holds the expired token.
+🧨 Problem Breakdown:
 
+    You generate a tokenized connection string at app startup.
+
+    This token is valid for 15 minutes.
+
+    Your background job uses this initial connection string/token.
+
+    After 15 minutes, the token expires and any new connection attempt using it fails.
+
+✅ Root Cause:
+
+.NET (and most other runtimes) caches and pools database connections by default using Npgsql (the .NET PostgreSQL driver). This means:
+
+    If the connection string is reused and contains an expired token, pooled connections using that string will fail.
+
+    If the connection string doesn’t change (e.g., same host, user, token), then Npgsql will recycle old connections, unaware that the token has expired.
+
+✅ Solution:
+
+You need to dynamically regenerate the IAM token and recreate the Npgsql connection each time before performing any DB operation in the job.
+🔧 Recommended Fix (Code Example):
+
+Here’s a pattern you can use:
+
+using Amazon.RDS.Util;
+using Npgsql;
+
+public async Task ExecuteJobAsync()
+{
+    var token = RDSAuthTokenGenerator.GenerateAuthToken(
+        region: "us-west-2",          // Replace with your region
+        endpoint: "your-db-host",     // Aurora cluster endpoint
+        port: 5432,
+        username: "your-db-user"
+    );
+
+    var connString = new NpgsqlConnectionStringBuilder
+    {
+        Host = "your-db-host",
+        Port = 5432,
+        Username = "your-db-user",
+        Password = token,
+        Database = "your-db-name",
+        SslMode = SslMode.Require,
+        TrustServerCertificate = true
+    }.ToString();
+
+    using var conn = new NpgsqlConnection(connString);
+    await conn.OpenAsync();
+
+    using var cmd = new NpgsqlCommand("SELECT now();", conn);
+    var result = await cmd.ExecuteScalarAsync();
+
+    Console.WriteLine($"Job executed at {result}");
+}
+
+💡 Make sure you regenerate the token every time the job runs.
+🛑 Don't Do This:
+
+    ❌ Don't store the token in configuration/environment variables.
+
+    ❌ Don't reuse DbContext or NpgsqlConnection across executions when using IAM auth.
+
+🛡️ Extra Recommendation:
+
+    You can disable connection pooling if you want to guarantee no stale connections:
+
+    new NpgsqlConnectionStringBuilder(connString) { Pooling = false };
+
+    But this impacts performance, so regenerating token + new connection per job is a better trade-off in background jobs.
+
+Let me know if you're using EF Core — the solution is slightly different in that case.
+You said:
+yes i want EF core based solution
+ChatGPT said:
+
+Great — since you're using Entity Framework Core with IAM authentication for Aurora PostgreSQL, and IAM tokens expire every 15 minutes, the core issue remains the same: the EF Core DbContext is using a stale connection string with an expired token.
+
+So, the EF Core solution must ensure that:
+
+    Every time the job runs, a new IAM token is generated.
+
+    A new DbContext is created using that token and not reused across job invocations.
+
+✅ EF Core – Working Solution Pattern
+
+Here’s how you can solve it properly:
+1. Create a custom DbContextFactory that generates a fresh token each time:
+
+using Amazon.RDS.Util;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Npgsql;
+
+public class MyDbContextFactory
+{
+    private readonly string _dbHost = "your-db-host";
+    private readonly int _dbPort = 5432;
+    private readonly string _dbUser = "your-db-user";
+    private readonly string _dbName = "your-db-name";
+    private readonly string _region = "us-west-2";
+
+    public MyDbContext CreateDbContext()
+    {
         var token = RDSAuthTokenGenerator.GenerateAuthToken(
             region: _region,
             endpoint: _dbHost,
