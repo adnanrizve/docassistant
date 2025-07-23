@@ -1651,3 +1651,52 @@ Let me know if you'd like:
     Logging, error handling, or retry policies added
 
 This version is ideal for ECS-based background processing.
+
+
+
+
+public class CertificateHeaderAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+{
+    public CertificateHeaderAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock)
+        : base(options, logger, encoder, clock) { }
+
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        if (!Request.Headers.TryGetValue("x-amzn-tls-client-cert", out var certHeader))
+        {
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
+        try
+        {
+            var certBytes = Convert.FromBase64String(certHeader);
+            var cert = new X509Certificate2(certBytes);
+
+            // ✅ Your custom cert validation here
+            if (cert.Subject.Contains("CN=trusted-client"))
+            {
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Name, cert.Subject)
+                };
+                var identity = new ClaimsIdentity(claims, Scheme.Name);
+                var principal = new ClaimsPrincipal(identity);
+                var ticket = new AuthenticationTicket(principal, Scheme.Name);
+
+                return Task.FromResult(AuthenticateResult.Success(ticket));
+            }
+            else
+            {
+                return Task.FromResult(AuthenticateResult.Fail("Untrusted client cert"));
+            }
+        }
+        catch
+        {
+            return Task.FromResult(AuthenticateResult.Fail("Invalid certificate header"));
+        }
+    }
+}
