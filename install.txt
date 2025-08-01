@@ -1700,3 +1700,163 @@ public class CertificateHeaderAuthenticationHandler : AuthenticationHandler<Auth
         }
     }
 }
+
+
+
+
+# Security Group
+resource "aws_security_group" "alb_sg" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 4444
+    to_port     = 4444
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "this" {
+  name = "selenium-grid-cluster"
+}
+
+# IAM Roles
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name = "ecsTaskExecutionRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution_attach" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# Task Definition
+resource "aws_ecs_task_definition" "selenium_task" {
+  family                   = "selenium-grid"
+  requires_compatibilities = ["FARGATE"]
+  network_mode            = "awsvpc"
+  cpu                     = "1024"
+  memory                  = "2048"
+  execution_role_arn      = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "selenium-hub",
+      image     = "selenium/hub:latest",
+      essential = true,
+      portMappings = [{
+        containerPort = 4444,
+        hostPort      = 4444,
+        protocol      = "tcp"
+      }]
+    },
+    {
+      name      = "selenium-node-chrome",
+      image     = "selenium/node-chrome:latest",
+      essential = true,
+      environment = [
+        {
+          name  = "SE_EVENT_BUS_HOST"
+          value = "localhost"
+        },
+        {
+          name  = "SE_EVENT_BUS_PUBLISH_PORT"
+          value = "4442"
+        },
+        {
+          name  = "SE_EVENT_BUS_SUBSCRIBE_PORT"
+          value = "4443"
+        }
+      ]
+    }
+  ])
+}
+
+# ALB
+resource "aws_lb" "selenium_alb" {
+  name               = "selenium-alb"
+  internal           = false
+  load_balancer_type = "application"
+  subnets            = aws_subnet.public[*].id
+  security_groups    = [aws_security_group.alb_sg.id]
+}
+
+resource "aws_lb_target_group" "selenium_tg" {
+  name     = "selenium-tg"
+  port     = 4444
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+  target_type = "ip"
+  health_check {
+    path                = "/wd/hub/status"
+    protocol            = "HTTP"
+    matcher             = "200"
+    interval            = 30
+    timeout             = 10
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+}
+
+resource "aws_lb_listener" "selenium_listener" {
+  load_balancer_arn = aws_lb.selenium_alb.arn
+  port              = 4444
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.selenium_tg.arn
+  }
+}
+
+# ECS Service
+resource "aws_ecs_service" "selenium_service" {
+  name            = "selenium-service"
+  cluster         = aws_ecs_cluster.this.id
+  task_definition = aws_ecs_task_definition.selenium_task.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = aws_subnet.public[*].id
+    assign_public_ip = true
+    security_groups  = [aws_security_group.alb_sg.id]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.selenium_tg.arn
+    container_name   = "selenium-hub"
+    container_port   = 4444
+  }
+
+  depends_on = [aws_lb_listener.selenium_listener]
+}
+
+📥 variables.tf (optional if you want to parameterize)
+
+# Optional customization of region, VPC CIDR, etc.
+
+📤 outputs.tf
+
+output "selenium_grid_url" {
+  value = "http://${aws_lb.selenium_alb.dns_name}:4444"
+}
