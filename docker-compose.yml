@@ -1,0 +1,29 @@
+services:
+  openhands-app:
+    image: docker.all-hands.dev/all-hands-ai/openhands:0.50
+    container_name: openhands-app
+    pull_policy: always
+    stdin_open: true  # equivalent to -i
+    tty: true  # equivalent to -t
+    environment:
+      - SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.50-nikolaik
+      - LOG_ALL_EVENTS=true
+    volumes:
+      - ./.openhands:/.openhands
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8150:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    volumes:
+      - ./litellm-config.yml:/app/config.yaml
+    restart: unless-stopped
+    environment:
+      - LITELLM_API_KEY=${LITELLM_API_KEY}
+      - AWS_REGION=us-east-1
+      - PORT=80
+    command: --config /app/config.yaml --detailed_debug
