@@ -6,6 +6,8 @@ from langchain_community.llms import CTransformers
 from langchain.chains import RetrievalQA
 import chainlit as cl
 
+# This is a document-based QA system using LangChain and Chainlit
+
 DB_FAISS_PATH = 'vectorstore/db_faiss'
 
 custom_prompt_template = """Use the following pieces of information to answer the user's question.
